@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import process from 'node:process';
-import { pathToFileURL } from 'node:url';
+import { realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { startRepl } from './repl.js';
@@ -126,9 +127,18 @@ export async function main(argv = process.argv, deps = {}) {
   await program.parseAsync(argv);
 }
 
-const isDirectRun =
-  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+function isDirectRun() {
+  if (!process.argv[1]) return false;
+  try {
+    // Resolve symlinks so global npm bin entrypoints are detected correctly.
+    const entryPath = realpathSync(process.argv[1]);
+    const currentFilePath = realpathSync(fileURLToPath(import.meta.url));
+    return entryPath === currentFilePath;
+  } catch {
+    return false;
+  }
+}
 
-if (isDirectRun) {
+if (isDirectRun()) {
   await main();
 }
