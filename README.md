@@ -2,6 +2,8 @@
 
 An interactive command-line client for [Yuque](https://www.yuque.com), built with Node.js.
 
+<img width="1500" height="936" alt="image" src="https://github.com/user-attachments/assets/a19dc500-c404-4c2a-bd62-9720b7ec72bd" />
+
 It provides a full-screen REPL with:
 - persistent app-style banner
 - keyboard-first navigation
@@ -9,7 +11,7 @@ It provides a full-screen REPL with:
 - `open` and `show` document flows
 - markdown pager and in-terminal editor for document body input
 
-中文文档请见: [`README.zh-CN.md`](README.zh-CN.md)
+中文文档: [`README.zh-CN.md`](README.zh-CN.md)
 
 ## Features
 
