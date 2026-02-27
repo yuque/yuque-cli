@@ -2,6 +2,8 @@
 
 一个基于 Node.js 的语雀命令行工具，提供沉浸式交互 REPL。
 
+<img width="1500" height="936" alt="image" src="https://github.com/user-attachments/assets/a19dc500-c404-4c2a-bd62-9720b7ec72bd" />
+
 主要能力：
 - 常驻 Banner 的应用式界面
 - 键盘优先的交互体验
