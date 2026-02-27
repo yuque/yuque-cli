@@ -1,0 +1,26 @@
+{
+  "name": "yuque-cli",
+  "version": "0.1.0",
+  "description": "Interactive Yuque CLI",
+  "type": "module",
+  "bin": {
+    "yuque": "src/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "preferGlobal": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "repl": "node src/index.js",
+    "link:global": "npm link",
+    "install:global": "npm i -g .",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^11.1.0",
+    "figures": "^6.1.0",
+    "open": "^9.1.0"
+  }
+}
