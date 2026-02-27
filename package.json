@@ -9,12 +9,10 @@
   "engines": {
     "node": ">=18"
   },
+  "author": "Barret Lee <barret.lee@gmail.com>",
   "preferGlobal": true,
   "scripts": {
     "start": "node src/index.js",
-    "repl": "node src/index.js",
-    "link:global": "npm link",
-    "install:global": "npm i -g .",
     "test": "node --test"
   },
   "dependencies": {

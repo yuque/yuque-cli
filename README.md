@@ -24,21 +24,13 @@ It provides a full-screen REPL with:
 
 - Node.js >= 18
 
-## Installation
-
-Install globally from current source:
+## Install
 
 ```bash
-npm run install:global
+npm install -g yuque-cli
 ```
 
-For local development (symlink command):
-
-```bash
-npm run link:global
-```
-
-Verify:
+## Verify
 
 ```bash
 yuque --version
@@ -76,25 +68,6 @@ yuque list docs <repo>
 yuque open <repo>/<doc>
 yuque show <repo>/<doc>
 yuque search "keyword" <repo>
-```
-
-## REPL Commands
-
-```text
-help
-clear
-exit | quit
-auth login
-auth logout
-whoami
-list repos
-list docs [repo]
-use <repo>
-open <repo>/<doc>
-show <repo>/<doc>
-search <kw> in [repo]
-search <kw>
-create doc in [repo]
 ```
 
 ## Environment Variables

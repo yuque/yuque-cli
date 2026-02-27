@@ -27,19 +27,11 @@ English docs: [`README.md`](README.md)
 
 ## 安装
 
-全局安装当前源码：
-
 ```bash
-npm run install:global
+npm install -g yuque-cli
 ```
 
-本地开发建议使用软链接：
-
-```bash
-npm run link:global
-```
-
-验证：
+## 验证
 
 ```bash
 yuque --version
@@ -77,25 +69,6 @@ yuque list docs <repo>
 yuque open <repo>/<doc>
 yuque show <repo>/<doc>
 yuque search "keyword" <repo>
-```
-
-## REPL 命令
-
-```text
-help
-clear
-exit | quit
-auth login
-auth logout
-whoami
-list repos
-list docs [repo]
-use <repo>
-open <repo>/<doc>
-show <repo>/<doc>
-search <kw> in [repo]
-search <kw>
-create doc in [repo]
 ```
 
 ## 环境变量
