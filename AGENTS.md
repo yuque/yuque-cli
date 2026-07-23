@@ -32,5 +32,9 @@ bin.ts → cli.ts (commander program, error → exit code)
 - Destructive commands (`delete`, `member remove`) go through `confirmDestructive` and
   support `--yes`.
 - Human output via `src/output.ts`; `--json` always prints the full raw payload.
-- `npm run check` (lint + format + typecheck + tests + build + dist smoke) must exit 0 —
-  it is the merge gate and matches CI.
+- `npm run check` (lint + format + typecheck + unit tests + build + dist smoke +
+  functional e2e) must exit 0 — it is the merge gate and matches CI.
+- Functional tests live in `tests/e2e/` (see its README): a mock-server suite that
+  spawns the built binary (always on), plus an env-gated real-API suite wired to
+  `.github/workflows/real-api-e2e.yml`. New/changed commands need e2e coverage in the
+  mock suite, not just unit tests.

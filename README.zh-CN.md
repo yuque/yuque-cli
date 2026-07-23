@@ -50,6 +50,7 @@ YUQUE_TOKEN=YOUR_TOKEN npx @yuque/cli auth status
 | ------------------ | ------------------------- | -------------------------------------------------------------------------------------------- |
 | Token **（必填）** | `YUQUE_TOKEN` / `--token` | 语雀个人或团队 API Token（同时兼容读取 `YUQUE_PERSONAL_TOKEN`，可与 @yuque/mcp-server 共用） |
 | Host（可选）       | `YUQUE_HOST` / `--host`   | 站点或空间地址，例如 `https://your-space.yuque.com` —— 绑定空间的团队 Token 和私有化部署必填 |
+| 超时（可选）       | `YUQUE_TIMEOUT_MS` / `--timeout` | API 请求超时毫秒数，默认 `30000`                                                     |
 
 命令行参数优先于环境变量，随手 `--token` 覆盖一次总是生效。站点地址会自动规范化（自动补 `/api/v2`）；不设置时默认 `https://www.yuque.com`。
 
@@ -129,8 +130,9 @@ yuque doc list team/handbook --all --json | jq -r '.[].slug'
 git clone https://github.com/yuque/yuque-cli.git
 cd yuque-cli
 npm install
-npm test              # 运行测试
+npm test              # 单元测试
 npm run build         # 编译 TypeScript
+npm run test:e2e      # 功能测试：构建产物对着 mock 语雀 API 跑
 npm run dev -- --help # 从源码运行
 ```
 

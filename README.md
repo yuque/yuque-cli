@@ -50,6 +50,7 @@ YUQUE_TOKEN=YOUR_TOKEN npx @yuque/cli auth status
 | -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Token **(required)** | `YUQUE_TOKEN` / `--token` | Personal or team Yuque API token (also reads `YUQUE_PERSONAL_TOKEN` as a compatibility fallback, e.g. shared with @yuque/mcp-server) |
 | Host (optional)      | `YUQUE_HOST` / `--host`   | Site or space host, e.g. `https://your-space.yuque.com` — required for space-bound team tokens and private deployments               |
+| Timeout (optional)   | `YUQUE_TIMEOUT_MS` / `--timeout` | API request timeout in milliseconds — default `30000`                                                                         |
 
 Flags win over env vars, so a one-off `--token` override always works. Site roots are normalized (`/api/v2` is appended automatically); when unset, the host defaults to `https://www.yuque.com`.
 
@@ -129,8 +130,9 @@ Colors are disabled automatically when piping, or force-off with `NO_COLOR=1`. R
 git clone https://github.com/yuque/yuque-cli.git
 cd yuque-cli
 npm install
-npm test              # run tests
+npm test              # unit tests
 npm run build         # compile TypeScript
+npm run test:e2e      # functional tests: the built binary vs a mock Yuque API
 npm run dev -- --help # run from source
 ```
 
