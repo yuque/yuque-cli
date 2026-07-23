@@ -41,7 +41,7 @@ export class YuqueHttp {
       headers: {
         'X-Auth-Token': options.token,
         'Content-Type': 'application/json',
-        'User-Agent': '@yuque/cli',
+        'User-Agent': 'yuque-cli',
       },
     });
   }

@@ -4,7 +4,7 @@ Guidance for AI agents (and humans) working in this repo.
 
 ## What this is
 
-`@yuque/cli` — a command-line interface for the Yuque (语雀) Open API, sibling of
+`yuque-cli` — a command-line interface for the Yuque (语雀) Open API, sibling of
 [yuque-mcp-server](https://github.com/yuque/yuque-mcp-server) and built with the same
 engineering conventions.
 

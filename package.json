@@ -1,6 +1,6 @@
 {
-  "name": "@yuque/cli",
-  "version": "0.1.0",
+  "name": "yuque-cli",
+  "version": "1.0.0",
   "description": "Command-line interface for Yuque (语雀) — browse, edit, and manage your knowledge base from the terminal",
   "type": "module",
   "main": "dist/cli.js",
