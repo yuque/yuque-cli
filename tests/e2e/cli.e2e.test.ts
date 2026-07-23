@@ -93,23 +93,41 @@ describeConfig('e2e config sanity', () => {
 
 const describeRead = READ_ENABLED && personalToken ? describe : describe.skip;
 describeRead('read paths (personal token)', () => {
-  let login: string;
+  /** Owner ref that the /users/... routes actually accept for this account. */
+  let owner: string;
   let readRepo: string;
   let sampleDocSlug: string | undefined;
 
   beforeAll(() => {
-    login = configuredLogin ?? String(okJson(pc(['auth', 'status', '--json'])).login);
+    const me = okJson(pc(['user', 'info', '--json']));
+    // Some accounts 404 on the by-login /users/{login}/... routes (e.g. private
+    // profiles) while the numeric id works, so probe login first, then fall
+    // back to id. YUQUE_E2E_LOGIN pins the ref explicitly and skips the probe.
+    const candidates = configuredLogin ? [configuredLogin] : [String(me.login), String(me.id)];
+    let repos: unknown;
+    for (const candidate of candidates) {
+      // Only Book repos serve the /docs and /toc endpoints — a Design (board)
+      // repo as the account's first repo would 404 them, so filter server-side.
+      const res = pc(['repo', 'list', candidate, '--type', 'Book', '--json']);
+      if (res.code === 0) {
+        owner = candidate;
+        repos = JSON.parse(res.stdout);
+        break;
+      }
+    }
+    expect(
+      owner,
+      `none of [${candidates.join(', ')}] can list repos — set YUQUE_E2E_LOGIN`
+    ).toBeTruthy();
     if (sandboxRepo) {
       readRepo = sandboxRepo;
     } else {
-      // Only Book repos serve the /docs and /toc endpoints — a Design (board)
-      // repo as the account's first repo would 404 them, so filter server-side.
-      const repos = okJson(pc(['repo', 'list', login, '--type', 'Book', '--json']));
       expect(
-        Array.isArray(repos) && repos.length,
+        Array.isArray(repos) && (repos as unknown[]).length,
         'test account has no Book repos to read — create one or set YUQUE_E2E_REPO'
       ).toBeTruthy();
-      readRepo = String(repos[0].namespace ?? repos[0].id);
+      const first = (repos as Array<Record<string, unknown>>)[0];
+      readRepo = String(first.namespace ?? first.id);
     }
     const docs = okJson(pc(['doc', 'list', readRepo, '--json']));
     sampleDocSlug = Array.isArray(docs) && docs.length ? String(docs[0].slug) : undefined;
@@ -130,7 +148,7 @@ describeRead('read paths (personal token)', () => {
   });
 
   it('user groups --json returns an array', () => {
-    expect(Array.isArray(okJson(pc(['user', 'groups', login, '--json'])))).toBe(true);
+    expect(Array.isArray(okJson(pc(['user', 'groups', owner, '--json'])))).toBe(true);
   });
 
   it('search --json returns an array', () => {
@@ -138,7 +156,7 @@ describeRead('read paths (personal token)', () => {
   });
 
   it('repo list --json returns an array', () => {
-    expect(Array.isArray(okJson(pc(['repo', 'list', login, '--json'])))).toBe(true);
+    expect(Array.isArray(okJson(pc(['repo', 'list', owner, '--json'])))).toBe(true);
   });
 
   it('repo get --json returns the repo', () => {
