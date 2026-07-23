@@ -1,24 +1,69 @@
 {
-  "name": "yuque-cli",
-  "version": "0.1.1",
-  "description": "Interactive Yuque CLI",
+  "name": "@yuque/cli",
+  "version": "0.1.0",
+  "description": "Command-line interface for Yuque (语雀) — browse, edit, and manage your knowledge base from the terminal",
   "type": "module",
+  "main": "dist/cli.js",
   "bin": {
-    "yuque": "src/index.js"
+    "yuque": "dist/bin.js"
   },
-  "engines": {
-    "node": ">=18"
-  },
-  "author": "Barret Lee <barret.lee@gmail.com>",
-  "preferGlobal": true,
+  "files": [
+    "dist",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "scripts": {
-    "start": "node src/index.js",
-    "test": "node --test"
+    "build": "tsc && chmod +x dist/bin.js",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm test && npm run build && npm run smoke:dist",
+    "dev": "tsx src/bin.ts",
+    "smoke:dist": "node scripts/smoke-dist-cli.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "yuque",
+    "cli",
+    "knowledge-base",
+    "markdown",
+    "documentation"
+  ],
+  "author": "yuque",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yuque/yuque-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yuque/yuque-cli/issues"
+  },
+  "homepage": "https://github.com/yuque/yuque-cli#readme",
+  "engines": {
+    "node": ">=20.0.0"
   },
   "dependencies": {
-    "chalk": "^5.3.0",
-    "commander": "^11.1.0",
-    "figures": "^6.1.0",
-    "open": "^9.1.0"
+    "axios": "^1.7.9",
+    "commander": "^14.0.0"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.10.5",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "@vitest/coverage-v8": "^4.0.18",
+    "eslint": "^9.18.0",
+    "js-yaml": "^4.1.0",
+    "prettier": "^3.4.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^4.0.18"
   }
 }
