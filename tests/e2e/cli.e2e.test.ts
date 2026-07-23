@@ -102,10 +102,12 @@ describeRead('read paths (personal token)', () => {
     if (sandboxRepo) {
       readRepo = sandboxRepo;
     } else {
-      const repos = okJson(pc(['repo', 'list', login, '--json']));
+      // Only Book repos serve the /docs and /toc endpoints — a Design (board)
+      // repo as the account's first repo would 404 them, so filter server-side.
+      const repos = okJson(pc(['repo', 'list', login, '--type', 'Book', '--json']));
       expect(
         Array.isArray(repos) && repos.length,
-        'test account has no repos to read'
+        'test account has no Book repos to read — create one or set YUQUE_E2E_REPO'
       ).toBeTruthy();
       readRepo = String(repos[0].namespace ?? repos[0].id);
     }
