@@ -21,6 +21,10 @@ export function buildProgram(): Command {
     .option('--token <token>', 'Yuque API token (overrides YUQUE_TOKEN / YUQUE_PERSONAL_TOKEN)')
     .option('--host <host>', 'Yuque host, e.g. https://your-space.yuque.com (overrides YUQUE_HOST)')
     .option('--json', 'print the full API response as JSON')
+    .option(
+      '--timeout <ms>',
+      'API request timeout in milliseconds (overrides YUQUE_TIMEOUT_MS, default 30000)'
+    )
     .showHelpAfterError('(run with --help for usage)');
   // Must precede register* calls: commander copies the exit callback into each
   // subcommand at .command() creation time, and the exit-code contract (usage

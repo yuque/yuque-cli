@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest';
 import {
   DEFAULT_HOST,
   MISSING_TOKEN_MESSAGE,
+  resolveTimeoutMs,
   normalizeHost,
   resolveHost,
   resolveToken,
 } from '../src/config.js';
+import { UsageError } from '../src/errors.js';
 
 describe('resolveToken', () => {
   it('prefers the flag over env vars', () => {
@@ -57,5 +59,22 @@ describe('resolveHost / normalizeHost', () => {
 
   it('keeps http:// for private deployments', () => {
     expect(normalizeHost('http://yuque.internal:8080/')).toBe('http://yuque.internal:8080');
+  });
+});
+
+describe('resolveTimeoutMs', () => {
+  it('defaults to 30000', () => {
+    expect(resolveTimeoutMs(undefined, {})).toBe(30000);
+  });
+
+  it('prefers the flag over YUQUE_TIMEOUT_MS', () => {
+    expect(resolveTimeoutMs('5000', { YUQUE_TIMEOUT_MS: '60000' })).toBe(5000);
+    expect(resolveTimeoutMs(undefined, { YUQUE_TIMEOUT_MS: '60000' })).toBe(60000);
+  });
+
+  it('rejects non-positive or non-numeric values as usage errors', () => {
+    expect(() => resolveTimeoutMs('0', {})).toThrow(UsageError);
+    expect(() => resolveTimeoutMs('abc', {})).toThrow(UsageError);
+    expect(() => resolveTimeoutMs(undefined, { YUQUE_TIMEOUT_MS: '-1' })).toThrow(UsageError);
   });
 });

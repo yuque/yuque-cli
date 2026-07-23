@@ -98,10 +98,32 @@ function publicOption(): Option {
   ]);
 }
 
+/**
+ * Sheet/Table docs carry their content in body_sheet/body_table and may leave
+ * `body` empty, so pick by format first and fall back across the content fields.
+ */
+function pickBody(detail: Partial<V2DocDetail>): string {
+  const byFormat =
+    detail.format === 'sheet'
+      ? detail.body_sheet
+      : detail.format === 'table'
+        ? detail.body_table
+        : detail.body;
+  const text = [byFormat, detail.body, detail.body_sheet, detail.body_table].find(
+    (candidate) => typeof candidate === 'string' && candidate !== ''
+  );
+  return typeof text === 'string' ? text : '';
+}
+
 /** Stream the doc body to stdout as-is (markdown pipes cleanly), newline-terminated. */
-function writeBody(body: unknown): void {
-  const text = typeof body === 'string' ? body : '';
-  if (text === '') return;
+function writeBody(detail: Partial<V2DocDetail>): void {
+  const text = pickBody(detail);
+  if (text === '') {
+    process.stderr.write(
+      `yuque: doc has no renderable body (format: ${detail.format ?? 'unknown'}) — try --json\n`
+    );
+    return;
+  }
   process.stdout.write(text.endsWith('\n') ? text : `${text}\n`);
 }
 
@@ -191,7 +213,7 @@ export function registerDocCommands(program: Command): void {
         printRecord(detail, DOC_META_FIELDS);
         return;
       }
-      writeBody(detail.body);
+      writeBody(detail);
     });
 
   const create = doc.command('create');
@@ -305,6 +327,8 @@ export function registerDocCommands(program: Command): void {
         printRecord(detail, VERSION_META_FIELDS);
         return;
       }
-      writeBody(detail.body_md ?? detail.body);
+      // Version payloads carry markdown in body_md; reuse the format-aware
+      // fallback chain by treating it as the primary body.
+      writeBody({ ...detail, body: detail.body_md ?? detail.body });
     });
 }

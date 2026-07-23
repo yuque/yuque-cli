@@ -1,5 +1,24 @@
+# Dependencies
 node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Build artifacts
 dist/
 coverage/
-*.log
+*.tgz
+
+# Env files
+.env
+.env.*
+
+# OS / Editor files
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/

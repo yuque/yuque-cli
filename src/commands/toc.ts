@@ -1,5 +1,6 @@
 import { Command, InvalidArgumentError, Option } from 'commander';
 import { getContext } from '../context.js';
+import { UsageError } from '../errors.js';
 import { dim, printJson, printOk } from '../output.js';
 import { parseRepoRef } from '../client/repo-ref.js';
 import { getToc, updateToc, type TocUpdateBody } from '../client/api/toc.js';
@@ -54,13 +55,42 @@ function printTocTree(items: V2TocItem[]): void {
   }
 }
 
+/**
+ * Spec cross-field rules for `toc update` (all flags optional at the parser
+ * level, but the API requires combinations): edit/remove need --node-uuid;
+ * append/prepend either move an existing node (--node-uuid) or create one,
+ * and creating requires --type plus its per-type fields. --target-uuid is
+ * always optional (defaults to the root node).
+ */
+function validateTocUpdate(opts: TocUpdateOptions): void {
+  const creating = opts.action === 'appendNode' || opts.action === 'prependNode';
+  if (!creating) {
+    if (opts.nodeUuid === undefined) {
+      throw new UsageError(
+        `--node-uuid is required for --action ${opts.action} (find it via \`yuque toc get\`)`
+      );
+    }
+    return;
+  }
+  if (opts.nodeUuid !== undefined) return; // moving an existing node
+  if (opts.type === undefined) {
+    throw new UsageError(
+      '--type is required when creating a node (append/prepend without --node-uuid)'
+    );
+  }
+  if (opts.type === 'DOC' && opts.docIds === undefined && opts.docId === undefined) {
+    throw new UsageError('--doc-ids is required to create DOC nodes');
+  }
+  if (opts.type === 'LINK' && (opts.title === undefined || opts.url === undefined)) {
+    throw new UsageError('--title and --url are required to create LINK nodes');
+  }
+  if (opts.type === 'TITLE' && opts.title === undefined) {
+    throw new UsageError('--title is required to create TITLE nodes');
+  }
+}
+
 export function registerTocCommands(program: Command): void {
-  // runCli applies exitOverride to the root only after registration, so subcommands
-  // must opt in themselves for usage errors to surface as CommanderError (exit 2).
-  const toc = program
-    .command('toc')
-    .description('Manage the table of contents (目录) of a repo')
-    .exitOverride();
+  const toc = program.command('toc').description('Manage the table of contents (目录) of a repo');
 
   const get = toc
     .command('get')
@@ -118,8 +148,9 @@ export function registerTocCommands(program: Command): void {
       new Option('--visible <n>', 'node visibility (0: hidden, 1: visible)').choices(['0', '1'])
     )
     .action(async (repoArg: string) => {
-      const ctx = getContext(update);
       const opts = update.opts<TocUpdateOptions>();
+      validateTocUpdate(opts);
+      const ctx = getContext(update);
       const body: TocUpdateBody = {
         action: opts.action,
         ...(opts.actionMode !== undefined && { action_mode: opts.actionMode }),

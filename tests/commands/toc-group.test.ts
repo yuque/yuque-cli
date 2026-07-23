@@ -315,3 +315,74 @@ describe('group member remove', () => {
     expect(stderrText()).toContain('--yes');
   });
 });
+
+describe('toc update cross-field validation (spec semantics)', () => {
+  it('rejects editNode/removeNode without --node-uuid (exit 2, no request)', async () => {
+    for (const action of ['editNode', 'removeNode']) {
+      const code = await runCli(['node', 'yuque', 'toc', 'update', '1', '--action', action]);
+      expect(code).toBe(2);
+    }
+    expect(stderrText()).toContain('--node-uuid is required');
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it('rejects creating a node without --type', async () => {
+    const code = await runCli(['node', 'yuque', 'toc', 'update', '1', '--action', 'appendNode']);
+    expect(code).toBe(2);
+    expect(stderrText()).toContain('--type is required');
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it('rejects DOC creation without --doc-ids and LINK creation without --title/--url', async () => {
+    const doc = await runCli([
+      'node',
+      'yuque',
+      'toc',
+      'update',
+      '1',
+      '--action',
+      'appendNode',
+      '--type',
+      'DOC',
+    ]);
+    const link = await runCli([
+      'node',
+      'yuque',
+      'toc',
+      'update',
+      '1',
+      '--action',
+      'prependNode',
+      '--type',
+      'LINK',
+      '--title',
+      't',
+    ]);
+    expect(doc).toBe(2);
+    expect(link).toBe(2);
+    expect(request).not.toHaveBeenCalled();
+  });
+
+  it('allows a move: appendNode with --node-uuid and no --type', async () => {
+    request.mockResolvedValueOnce({ data: { data: [{ uuid: 'nu' }] } });
+    const code = await runCli([
+      'node',
+      'yuque',
+      'toc',
+      'update',
+      '1',
+      '--action',
+      'appendNode',
+      '--node-uuid',
+      'nu',
+      '--target-uuid',
+      'tu',
+    ]);
+    expect(code).toBe(0);
+    expect(request).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { action: 'appendNode', target_uuid: 'tu', node_uuid: 'nu' },
+      })
+    );
+  });
+});

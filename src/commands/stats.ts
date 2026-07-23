@@ -2,7 +2,6 @@ import type { Command } from 'commander';
 import { getContext } from '../context.js';
 import { UsageError } from '../errors.js';
 import { printJson, printRecord, printTable, type Column } from '../output.js';
-import { fetchAllPages } from '../client/paginate.js';
 import type { YuqueHttp } from '../client/http.js';
 import {
   getGroupStatistics,
@@ -142,11 +141,18 @@ function withListOptions(cmd: Command, sortFields: string[]): Command {
     .option('--all', 'fetch every page (takes precedence over --page/--limit)');
 }
 
-// --json always prints the bare rows array (with or without --all) so scripts can
-// rely on the same `.[]` shape as every other list command.
+interface StatsPage<T> {
+  rows: T[];
+  total?: number;
+}
+
+// --json prints the same `{ <rows-key>: [...], total }` object in both paging
+// modes, preserving the API's pagination metadata (with --all, `total` is the
+// server total from the last page and the rows span every page).
 async function runList<T extends Record<string, unknown>>(
   cmd: Command,
-  fetchPage: (http: YuqueHttp, params: DocStatsListParams) => Promise<T[]>,
+  rowsKey: 'members' | 'books' | 'docs',
+  fetchPage: (http: YuqueHttp, params: DocStatsListParams) => Promise<StatsPage<T>>,
   columns: Column<T>[]
 ): Promise<void> {
   const ctx = getContext(cmd);
@@ -158,14 +164,23 @@ async function runList<T extends Record<string, unknown>>(
     sortOrder: opts.sortOrder,
     bookId: opts.bookId,
   };
-  const rows = opts.all
-    ? await fetchAllPages<T>(
-        (offset, limit) => fetchPage(ctx.http, { ...filters, page: offset / limit + 1, limit }),
-        MAX_PAGE_SIZE
-      )
-    : await fetchPage(ctx.http, { ...filters, page: opts.page, limit: opts.limit });
+  let rows: T[];
+  let total: number | undefined;
+  if (opts.all) {
+    rows = [];
+    for (let page = 1; ; page++) {
+      const result = await fetchPage(ctx.http, { ...filters, page, limit: MAX_PAGE_SIZE });
+      rows.push(...result.rows);
+      total = result.total ?? total;
+      if (result.rows.length < MAX_PAGE_SIZE) break;
+    }
+  } else {
+    const result = await fetchPage(ctx.http, { ...filters, page: opts.page, limit: opts.limit });
+    rows = result.rows;
+    total = result.total;
+  }
   if (ctx.json) {
-    printJson(rows);
+    printJson({ [rowsKey]: rows, ...(total !== undefined && { total }) });
   } else {
     printTable(rows, columns);
   }
@@ -193,7 +208,11 @@ export function registerStatsCommands(program: Command): void {
   ).action(async (login: string) => {
     await runList(
       membersCmd,
-      async (http, params) => (await listMemberStatistics(http, login, params)).members,
+      'members',
+      async (http, params) => {
+        const page = await listMemberStatistics(http, login, params);
+        return { rows: page.members, total: page.total };
+      },
       MEMBER_COLUMNS
     );
   });
@@ -204,7 +223,11 @@ export function registerStatsCommands(program: Command): void {
   ).action(async (login: string) => {
     await runList(
       booksCmd,
-      async (http, params) => (await listBookStatistics(http, login, params)).books,
+      'books',
+      async (http, params) => {
+        const page = await listBookStatistics(http, login, params);
+        return { rows: page.books, total: page.total };
+      },
       BOOK_COLUMNS
     );
   });
@@ -217,7 +240,11 @@ export function registerStatsCommands(program: Command): void {
     .action(async (login: string) => {
       await runList(
         docsCmd,
-        async (http, params) => (await listDocStatistics(http, login, params)).docs,
+        'docs',
+        async (http, params) => {
+          const page = await listDocStatistics(http, login, params);
+          return { rows: page.docs, total: page.total };
+        },
         DOC_COLUMNS
       );
     });

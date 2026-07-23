@@ -121,6 +121,8 @@ export interface V2DocDetail extends V2Doc {
   body_draft?: string;
   body_html?: string;
   body_lake?: string;
+  body_sheet?: string;
+  body_table?: string;
   creator?: V2User;
   [key: string]: unknown;
 }

@@ -151,11 +151,11 @@ describe('stats commands', () => {
       );
     });
 
-    it('--json prints the member rows as a bare array (same shape as --all)', async () => {
+    it('--json prints the page object with rows and total', async () => {
       request.mockResolvedValueOnce(envelope(membersPage));
       const code = await run('stats', 'members', 'mygroup', '--json');
       expect(code).toBe(0);
-      expect(JSON.parse(stdoutText())).toEqual(membersPage.members);
+      expect(JSON.parse(stdoutText())).toEqual({ members: membersPage.members, total: 2 });
     });
 
     it('--all drains pages at max page size and keeps filters', async () => {
@@ -174,7 +174,9 @@ describe('stats commands', () => {
         2,
         expect.objectContaining({ params: { name: 'ann', page: 2, limit: 20 } })
       );
-      expect(JSON.parse(stdoutText())).toHaveLength(21);
+      const drained = JSON.parse(stdoutText());
+      expect(drained.members).toHaveLength(21);
+      expect(drained.total).toBe(21);
     });
 
     it('rejects a --range value outside the spec enum with exit code 2', async () => {
@@ -210,11 +212,11 @@ describe('stats commands', () => {
       expect(stdoutText()).toContain('Handbook');
     });
 
-    it('--json prints the book rows as a bare array (same shape as --all)', async () => {
+    it('--json prints the page object with rows and total', async () => {
       request.mockResolvedValueOnce(envelope(booksPage));
       const code = await run('stats', 'books', 'mygroup', '--json');
       expect(code).toBe(0);
-      expect(JSON.parse(stdoutText())).toEqual(booksPage.books);
+      expect(JSON.parse(stdoutText())).toEqual({ books: booksPage.books, total: 1 });
     });
   });
 
@@ -236,12 +238,12 @@ describe('stats commands', () => {
       expect(stdoutText()).toContain('Intro');
     });
 
-    it('--json prints the doc rows as a bare array (same shape as --all)', async () => {
+    it('--json prints the page object with rows and total', async () => {
       const docsPage = { docs: [{ doc_id: 55, title: 'Intro' }], total: 1 };
       request.mockResolvedValueOnce(envelope(docsPage));
       const code = await run('stats', 'docs', 'mygroup', '--json');
       expect(code).toBe(0);
-      expect(JSON.parse(stdoutText())).toEqual(docsPage.docs);
+      expect(JSON.parse(stdoutText())).toEqual({ docs: docsPage.docs, total: 1 });
     });
   });
 

@@ -1,4 +1,9 @@
+import { UsageError } from './errors.js';
+
 export const DEFAULT_HOST = 'https://www.yuque.com';
+
+/** Matches the yuque-mcp-server client default. */
+export const DEFAULT_TIMEOUT_MS = 30000;
 
 export const MISSING_TOKEN_MESSAGE =
   'A Yuque API token is required. Set the YUQUE_TOKEN (or YUQUE_PERSONAL_TOKEN) environment variable or pass --token=<token>. ' +
@@ -17,6 +22,19 @@ export function resolveHost(
   env: NodeJS.ProcessEnv = process.env
 ): string {
   return normalizeHost(flagHost || env.YUQUE_HOST || DEFAULT_HOST);
+}
+
+/** Request timeout in ms: --timeout flag > YUQUE_TIMEOUT_MS env > 30000 default. */
+export function resolveTimeoutMs(
+  flagTimeout: string | undefined,
+  env: NodeJS.ProcessEnv = process.env
+): number {
+  const raw = flagTimeout ?? env.YUQUE_TIMEOUT_MS;
+  if (raw === undefined || raw.trim() === '') return DEFAULT_TIMEOUT_MS;
+  if (!/^\d+$/.test(raw.trim()) || Number(raw) === 0) {
+    throw new UsageError(`Invalid timeout "${raw}" — expected a positive integer of milliseconds`);
+  }
+  return Number(raw);
 }
 
 /**

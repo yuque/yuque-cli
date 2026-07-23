@@ -31,6 +31,16 @@ function parseLimit(value: string): number {
   return limit;
 }
 
+/** Spec enum for repo visibility. */
+function parsePublic(value: string): number {
+  if (!['0', '1', '2'].includes(value.trim())) {
+    throw new UsageError(
+      `--public must be 0 (private), 1 (public), or 2 (org-only), got "${value}"`
+    );
+  }
+  return Number(value);
+}
+
 const LIST_TYPES = ['Book', 'Design', 'all'];
 
 /** `all` (like omitting the flag) means no server-side filter; the spec enum is Book|Design. */
@@ -135,7 +145,7 @@ export function registerRepoCommands(program: Command): void {
     .requiredOption('--slug <slug>', 'repo path (slug) (required)')
     .option('--group', 'create under a group instead of a user')
     .option('--description <description>', 'repo description')
-    .option('--public <n>', 'visibility: 0 private, 1 public, 2 org-only', parseNonNegativeInt)
+    .option('--public <n>', 'visibility: 0 private, 1 public, 2 org-only', parsePublic)
     .option('--enhanced-privacy', 'restrict access to team admins only (增强私密性)')
     .action(
       async (
@@ -170,7 +180,7 @@ export function registerRepoCommands(program: Command): void {
     .option('--name <name>', 'new name')
     .option('--slug <slug>', 'new path (slug)')
     .option('--description <description>', 'new description')
-    .option('--public <n>', 'visibility: 0 private, 1 public, 2 org-only', parseNonNegativeInt)
+    .option('--public <n>', 'visibility: 0 private, 1 public, 2 org-only', parsePublic)
     .option('--toc <markdown>', 'replace the table of contents (Markdown list)')
     .action(
       async (
