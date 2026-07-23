@@ -37,6 +37,10 @@ vitest process, so a synchronous spawn would freeze the event loop and deadlock.
 CI wiring lives in `.github/workflows/ci.yml`: every push/PR (plus a weekly schedule
 for API-drift detection) runs `npm run check`, and the real-API read paths turn on
 automatically — on the Node 22 leg only — when the `YUQUE_E2E_TOKEN` repository secret
-is configured. Fork PRs see no secrets, so those paths skip and CI stays green. Write
-gates stay off in CI on purpose — they modify real content and belong to a dedicated
-sandbox run by a human.
+is configured. Fork PRs see no secrets, so those paths skip and CI stays green.
+
+`YUQUE_E2E_TOKEN` must belong to a **dedicated test account**: on the first run
+against an empty account the suite bootstraps a `cli-e2e-sandbox` Book with one
+fixture doc (the only write the read paths ever perform) and reuses it afterwards.
+The write-mode gates (`YUQUE_E2E_WRITE` / `YUQUE_E2E_REPO_LIFECYCLE`) stay off in CI
+on purpose and belong to a human-run sandbox session.

@@ -121,13 +121,40 @@ describeRead('read paths (personal token)', () => {
     ).toBeTruthy();
     if (sandboxRepo) {
       readRepo = sandboxRepo;
-    } else {
-      expect(
-        Array.isArray(repos) && (repos as unknown[]).length,
-        'test account has no Book repos to read — create one or set YUQUE_E2E_REPO'
-      ).toBeTruthy();
+    } else if (Array.isArray(repos) && (repos as unknown[]).length) {
       const first = (repos as Array<Record<string, unknown>>)[0];
       readRepo = String(first.namespace ?? first.id);
+    } else {
+      // The token belongs to a dedicated, otherwise-empty test account:
+      // bootstrap a sandbox Book once so the read paths have a real target.
+      // Later runs discover it through the Book listing above and skip this.
+      const created = okJson(
+        pc([
+          'repo',
+          'create',
+          owner,
+          '--name',
+          'CLI E2E Sandbox',
+          '--slug',
+          'cli-e2e-sandbox',
+          '--json',
+        ])
+      );
+      readRepo = String(created.namespace ?? created.id);
+      okJson(
+        pc([
+          'doc',
+          'create',
+          readRepo,
+          '--title',
+          'E2E Fixture',
+          '--slug',
+          'e2e-fixture',
+          '--body',
+          '# E2E Fixture\n\nCreated by yuque-cli CI to exercise real-API read paths.\n',
+          '--json',
+        ])
+      );
     }
     const docs = okJson(pc(['doc', 'list', readRepo, '--json']));
     sampleDocSlug = Array.isArray(docs) && docs.length ? String(docs[0].slug) : undefined;
