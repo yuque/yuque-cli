@@ -1,9 +1,19 @@
 name: CI
 
+# One unified gate: lint + typecheck + unit tests + build + dist smoke + e2e.
+# The e2e step always runs the mock-server suite; the real-API read paths in
+# tests/e2e/cli.e2e.test.ts additionally run when the YUQUE_E2E_TOKEN secret is
+# configured (repo Settings → Secrets and variables → Actions). They are enabled
+# on the Node 22 leg only, so the live API is hit once per run, and they skip
+# gracefully on forks (secrets are absent there). The weekly schedule catches
+# upstream API drift even when nothing is pushed.
 on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * 1'
 
 jobs:
   check:
@@ -18,4 +28,10 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
-      - run: npm run check
+      - name: npm run check (real-API e2e on the Node 22 leg when the token secret exists)
+        run: npm run check
+        env:
+          YUQUE_E2E: ${{ matrix.node-version == 22 && secrets.YUQUE_E2E_TOKEN != '' && '1' || '' }}
+          YUQUE_E2E_TOKEN: ${{ secrets.YUQUE_E2E_TOKEN }}
+          YUQUE_E2E_LOGIN: ${{ vars.YUQUE_E2E_LOGIN }}
+          YUQUE_E2E_REPO: ${{ vars.YUQUE_E2E_REPO }}

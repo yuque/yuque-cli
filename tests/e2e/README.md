@@ -34,7 +34,9 @@ vitest process, so a synchronous spawn would freeze the event loop and deadlock.
 | `YUQUE_E2E_TEAM_TOKEN` / `YUQUE_E2E_HOST` / `YUQUE_E2E_GROUP` | Team/space-token paths (groups, stats)                            |
 | `YUQUE_E2E_REPO_LIFECYCLE=1`                                  | Repo create/delete — local only, never wired into CI              |
 
-CI wiring lives in `.github/workflows/real-api-e2e.yml` (weekly + manual): it enables
-only the read paths, and only when the `YUQUE_E2E_TOKEN` secret is configured. Write
+CI wiring lives in `.github/workflows/ci.yml`: every push/PR (plus a weekly schedule
+for API-drift detection) runs `npm run check`, and the real-API read paths turn on
+automatically — on the Node 22 leg only — when the `YUQUE_E2E_TOKEN` repository secret
+is configured. Fork PRs see no secrets, so those paths skip and CI stays green. Write
 gates stay off in CI on purpose — they modify real content and belong to a dedicated
 sandbox run by a human.
