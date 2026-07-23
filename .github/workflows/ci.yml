@@ -27,7 +27,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - run: npm ci
+      # npm install, not npm ci: vitest's platform-specific wasm bindings resolve
+      # different @emnapi versions per OS, and a macOS-generated lockfile trips
+      # npm ci's strict sync check on Linux (npm/cli#4828 family).
+      - run: npm install --no-audit --no-fund
       - name: npm run check (real-API e2e on the Node 22 leg when the token secret exists)
         run: npm run check
         env:
